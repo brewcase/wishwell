@@ -8,13 +8,13 @@ export default function Header() {
       <Logo />
       <div className="flex items-center gap-8">
         <Link 
-          href="/login" 
+          href="/signin" 
           className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
         >
           Login
         </Link>
         <Button href="/signup" size="sm">
-          Try wishewell for free
+          Try WishWell for free
         </Button>
       </div>
     </nav>
