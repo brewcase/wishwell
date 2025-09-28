@@ -2,7 +2,8 @@
 
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { profileService, Profile } from '@/lib/supabase/database'
 import Logo from '@/components/icons/Logo'
 import Button from '@/components/ui/Button'
 import { Calendar, Users, Settings, Plus, Bell } from 'lucide-react'
@@ -15,6 +16,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const { user, loading, signOut } = useAuth()
+  const [profile, setProfile] = useState<Profile | null>(null)
   const router = useRouter()
 
   // 🛡️ CONCEPT: Route Protection
@@ -24,6 +26,22 @@ export default function DashboardLayout({
       router.push('/signin')
     }
   }, [user, loading, router])
+
+  // 👤 CONCEPT: Load User Profile
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (user) {
+        try {
+          const profileData = await profileService.getProfile()
+          setProfile(profileData)
+        } catch (error) {
+          console.error('Error loading profile:', error)
+        }
+      }
+    }
+
+    loadProfile()
+  }, [user])
 
   // 📱 CONCEPT: Loading State
   // Show loading while checking authentication
@@ -68,7 +86,7 @@ export default function DashboardLayout({
             {/* User Menu */}
             <div className="flex items-center space-x-4">
               <span className="text-gray-300 text-sm">
-                {user.email}
+                {profile?.full_name || profile?.first_name || user.email}
               </span>
               <Button 
                 variant="outline" 

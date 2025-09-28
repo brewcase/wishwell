@@ -10,6 +10,8 @@ import Logo from '@/components/icons/Logo'
 // 🎯 CONCEPT: Form State Management
 // We'll track form data, loading state, and errors separately
 interface FormData {
+  firstName: string
+  lastName: string
   email: string
   password: string
   confirmPassword: string
@@ -17,6 +19,8 @@ interface FormData {
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState<FormData>({
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -40,8 +44,18 @@ export default function SignUpPage() {
 
   // ✅ CONCEPT: Client-side Validation
   const validateForm = (): boolean => {
-    if (!formData.email || !formData.password || !formData.confirmPassword) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('All fields are required')
+      return false
+    }
+    
+    if (formData.firstName.trim().length < 2) {
+      setError('First name must be at least 2 characters')
+      return false
+    }
+    
+    if (formData.lastName.trim().length < 2) {
+      setError('Last name must be at least 2 characters')
       return false
     }
     
@@ -83,7 +97,13 @@ export default function SignUpPage() {
         options: {
           // 🔗 CONCEPT: Email Confirmation
           // User gets email with link to confirm account
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          // 👤 CONCEPT: User Metadata
+          // Store additional user info that will be used in the database trigger
+          data: {
+            first_name: formData.firstName.trim(),
+            last_name: formData.lastName.trim()
+          }
         }
       })
 
@@ -116,6 +136,42 @@ export default function SignUpPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-2">
+                First Name
+              </label>
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                autoComplete="given-name"
+                required
+                value={formData.firstName}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                placeholder="Enter your first name"
+              />
+            </div>
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-2">
+                Last Name
+              </label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                autoComplete="family-name"
+                required
+                value={formData.lastName}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                placeholder="Enter your last name"
+              />
+            </div>
+          </div>
+
           {/* Email Input */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">

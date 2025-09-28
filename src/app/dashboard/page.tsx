@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { friendsService, Friend } from '@/lib/supabase/database'
+import { friendsService, Friend, profileService, Profile } from '@/lib/supabase/database'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
 import Button from '@/components/ui/Button'
 import { Calendar, Users, Gift, Plus, Clock } from 'lucide-react'
@@ -10,12 +10,13 @@ import { Calendar, Users, Gift, Plus, Clock } from 'lucide-react'
 export default function Dashboard() {
   const { user } = useAuth()
   const [friends, setFriends] = useState<Friend[]>([])
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   // 🔄 CONCEPT: Real Data Loading from Supabase
   useEffect(() => {
-    const loadFriends = async () => {
+    const loadData = async () => {
       if (!user) return
       
       setLoading(true)
@@ -23,20 +24,25 @@ export default function Dashboard() {
       
       try {
         // 📊 CONCEPT: Service Layer Usage
-        const friendsData = await friendsService.getFriends()
+        const [friendsData, profileData] = await Promise.all([
+          friendsService.getFriends(),
+          profileService.getProfile()
+        ])
         setFriends(friendsData)
+        setProfile(profileData)
       } catch (err) {
-        console.error('Error loading friends:', err)
-        setError('Failed to load friends. Please try again.')
+        console.error('Error loading data:', err)
+        setError('Failed to load data. Please try again.')
       } finally {
         setLoading(false)
       }
     }
 
-    loadFriends()
+    loadData()
   }, [user])
 
   const upcomingBirthdays = friends.filter(friend => friend.days_until_birthday! <= 30)
+  const userName = profile?.first_name || 'there'
 
   return (
     <DashboardLayout>
@@ -44,7 +50,7 @@ export default function Dashboard() {
         {/* 👋 CONCEPT: Welcome Header */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-6">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Welcome back! 👋
+            Welcome back, {userName}! 👋
           </h1>
           <p className="text-gray-300">
             You have {upcomingBirthdays.length} birthdays coming up in the next 30 days
